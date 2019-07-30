@@ -4,16 +4,16 @@
 #include <memory>
 
 
-#include "OutputPort.h"
-#include "InputPort.h"
-#include "AsyncInput.h"
+#include "OutputPort_Linux.h"
+#include "InputPort_Linux.h"
+#include "AsyncInputListener.h"
 
 
 using namespace std;
 
 static shared_ptr<IOutputPort>out_port;
 static shared_ptr<IInputPort>in_sync;
-static shared_ptr<AsyncInput>in_async;
+static shared_ptr<AsyncInputListener>in_async;
 
 
 static bool stop=false;
@@ -52,10 +52,10 @@ void OffEvent(){
 int main(){
     cout<<"Program started"<<endl;
     try{
-        InputPort ai(2);
-        out_port=make_shared<OutputPort>(14);
-        in_sync=make_shared<InputPort>(3);
-        in_async=make_shared<AsyncInput>(ai);
+        InputPort_Linux inputPort(2);
+        out_port=make_shared<OutputPort_Linux>(14);
+        in_sync=make_shared<InputPort_Linux>(3);
+        in_async=make_shared<AsyncInputListener>(inputPort);
         in_async->SetOnCallback(OnEvent);
         in_async->SetOffCallback(OffEvent);
 
@@ -67,7 +67,7 @@ int main(){
         sigaction(SIGTERM,&sigHandler,NULL);
         sigaction(SIGINT,&sigHandler,NULL);
 
-        in_sync->SetTriggerEdge(InputPort::TriggerEdge::Both);
+        in_sync->SetTriggerEdge(IInputPort::TriggerEdge::Both);
         in_async->Init();
         in_async->StartListening();
         cout<<"Running"<<endl;

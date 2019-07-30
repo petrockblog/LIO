@@ -1,11 +1,11 @@
-#include "GPIO_Linux.h"
+#include "SysfsWrapper.h"
 #include <sstream>
 #include <stdexcept>
 #include <syslog.h>
 using namespace std;
 
 
-GPIO_Linux::GPIO_Linux(uint32_t pinNo):_pinNo(pinNo),basePath("/sys/class/gpio"),pinBasePath(""){
+SysfsWrapper::SysfsWrapper(uint32_t pinNo):_pinNo(pinNo),basePath("/sys/class/gpio"),pinBasePath(""){
     stringstream ss;
     ss<<basePath<<"/gpio"<<_pinNo<<"/";
     pinBasePath=ss.str();
@@ -20,12 +20,12 @@ GPIO_Linux::GPIO_Linux(uint32_t pinNo):_pinNo(pinNo),basePath("/sys/class/gpio")
     exp<<to_string(_pinNo);
 }
 
-GPIO_Linux::~GPIO_Linux(){
+SysfsWrapper::~SysfsWrapper(){
     fstream unExp(basePath+"/unexport");
     unExp<<to_string(_pinNo);
 }
 
-void GPIO_Linux::SetDirection(GPIO_Linux::Direction dir){
+void SysfsWrapper::SetDirection(SysfsWrapper::Direction dir){
     auto direction=make_unique<fstream>(pinBasePath+"direction");
     if(!direction->good()){
         syslog(LOG_CRIT,"Unable to open direction file - %ud",_pinNo);
@@ -47,7 +47,7 @@ void GPIO_Linux::SetDirection(GPIO_Linux::Direction dir){
     }
 }
 
-void GPIO_Linux::SetActiveLow(bool isActiveLow){
+void SysfsWrapper::SetActiveLow(bool isActiveLow){
     auto activeLow=make_unique<fstream>(pinBasePath+"active_low");
     if(!activeLow->good()){
         syslog(LOG_CRIT,"Unable to open active_low file - %ud",_pinNo);
@@ -56,7 +56,7 @@ void GPIO_Linux::SetActiveLow(bool isActiveLow){
     *activeLow<<(isActiveLow?"1":"0");
 }
 
-bool GPIO_Linux::ReadVal(){
+bool SysfsWrapper::ReadVal(){
     auto value=make_unique<fstream>(pinBasePath+"value");
     if(!value->good()){
         syslog(LOG_CRIT,"Unable to open value for read - %ud",_pinNo);
@@ -67,7 +67,7 @@ bool GPIO_Linux::ReadVal(){
     return ret;
 }
 
-void GPIO_Linux::WriteVal(bool val){
+void SysfsWrapper::WriteVal(bool val){
     auto value=make_unique<fstream>(pinBasePath+"value");
     if(!value->good()){
         syslog(LOG_CRIT,"Unable to open value for write - %ud",_pinNo);
@@ -76,10 +76,10 @@ void GPIO_Linux::WriteVal(bool val){
     *value<<val;
 }
 
-uint32_t GPIO_Linux::GetPinNo(){
+uint32_t SysfsWrapper::GetPinNo(){
     return _pinNo;
 }
 
-string GPIO_Linux::GetPinBasePath(){
+string SysfsWrapper::GetPinBasePath(){
     return pinBasePath;
 }

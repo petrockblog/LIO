@@ -1,4 +1,4 @@
-#include "InputPort.h"
+#include "InputPort_Linux.h"
 #include <poll.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -7,8 +7,8 @@
 
 using namespace std;
 
-InputPort::InputPort(uint32_t pinNo):port(pinNo){
-    port.SetDirection(GPIO_Linux::Direction::Input);
+InputPort_Linux::InputPort_Linux(uint32_t pinNo):port(pinNo){
+    port.SetDirection(SysfsWrapper::Direction::Input);
     fd=open(string(port.GetPinBasePath()+"value").c_str(),O_RDONLY | O_NONBLOCK);
     if(fd<0){
         syslog(LOG_ERR,"Unable to open input for polling: %d - %ud",fd,port.GetPinNo());
@@ -19,16 +19,16 @@ InputPort::InputPort(uint32_t pinNo):port(pinNo){
     }
 }
 
-InputPort::~InputPort(){
+InputPort_Linux::~InputPort_Linux(){
     if(fd>=0)
         close(fd);
 }
 
-void InputPort::SetTriggerEdge(InputPort::TriggerEdge edge){
+void InputPort_Linux::SetTriggerEdge(InputPort_Linux::TriggerEdge edge){
     auto triggerEdge=make_unique<fstream>(port.GetPinBasePath()+"edge");
     if(!triggerEdge->good()){
-        syslog(LOG_CRIT,"Unable to open edge descrriptor. - %ud",port.GetPinNo());
-        throw runtime_error("Unable to open edge descrriptor.");
+        syslog(LOG_CRIT,"Unable to open edge descriptor. - %ud",port.GetPinNo());
+        throw runtime_error("Unable to open edge descriptor.");
     }
     switch(edge){
         case TriggerEdge::None:
@@ -46,7 +46,7 @@ void InputPort::SetTriggerEdge(InputPort::TriggerEdge edge){
     }
 }
 
-bool InputPort::WaitForValidEvent(int timeout_ms){
+bool InputPort_Linux::WaitForValidEvent(int timeout_ms){
     bool ret=false;
     if(fd>=0)
     {
@@ -65,7 +65,7 @@ bool InputPort::WaitForValidEvent(int timeout_ms){
     return ret;
 }
 
-bool InputPort::Read(){
+bool InputPort_Linux::Read(){
     if(fd>=0){
         lseek(fd, 0, SEEK_SET);
         char b[2];
@@ -76,6 +76,6 @@ bool InputPort::Read(){
         return port.ReadVal();
 }
 
-uint32_t InputPort::GetPinNo(){
+uint32_t InputPort_Linux::GetPinNo(){
     return port.GetPinNo();
 }

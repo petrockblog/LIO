@@ -1,5 +1,5 @@
-#ifndef GPIO_LINUX_H
-#define GPIO_LINUX_H
+#ifndef SYSFSWRAPPER_H
+#define SYSFSWRAPPER_H
 
 #include <string>
 
@@ -9,7 +9,7 @@
 /**
  * @brief Base class of Input Output pins. Wraps sysfs kernel interface
  */
-class GPIO_Linux
+class SysfsWrapper
 {
 private:
     uint32_t _pinNo;
@@ -20,8 +20,8 @@ public:
     enum class Direction{Input, Output, High, Low};
     void SetDirection(Direction dir);
     void SetActiveLow(bool isActiveLow);
-    GPIO_Linux(uint32_t pinNo);
-    virtual ~GPIO_Linux();
+    SysfsWrapper(uint32_t pinNo);
+    virtual ~SysfsWrapper();
     bool ReadVal();
     void WriteVal(bool val);
     std::string GetPinBasePath();
@@ -29,4 +29,4 @@ public:
 
 };
 
-#endif // GPIO_LINUX_H
+#endif // SYSFSWRAPPER_H

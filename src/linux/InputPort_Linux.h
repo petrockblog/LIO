@@ -1,25 +1,25 @@
 #ifndef INPUTPORT_H
 #define INPUTPORT_H
 
-#include "GPIO_Linux.h"
+#include "SysfsWrapper.h"
 #include "IInputPort.h"
 #include <mutex>
 #include <condition_variable>
 /**
  * @brief Represents an input port
  */
-class InputPort:public IInputPort
+class InputPort_Linux:public IInputPort
 {
 private:
     int fd;
-    GPIO_Linux port;
+    SysfsWrapper port;
 public:
     /**
      * @brief Create and config an input port
      * @param GPIO No.
      */
-    InputPort(uint32_t pinNo);
-    virtual ~InputPort();
+    InputPort_Linux(uint32_t pinNo);
+    virtual ~InputPort_Linux()override;
     virtual void SetTriggerEdge(TriggerEdge edge) override;
     /**
      * @brief This function blocks the execution maximum for the given time or until event happens on the input pin

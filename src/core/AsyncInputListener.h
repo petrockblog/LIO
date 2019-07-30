@@ -8,7 +8,7 @@
 /**
  * @brief Represents an input pin that can inform the outside world from its state change
  */
-class AsyncInput: public EventHandledInput
+class AsyncInputListener: public EventHandledInput
 {
 private:
     IInputPort& _inputPort;
@@ -18,7 +18,7 @@ private:
     bool exit;
     void Listen();
 public:
-    AsyncInput(IInputPort& inputPort);
+    AsyncInputListener(IInputPort& inputPort);
     void Init();
     void StartListening();
     void StopListening();
