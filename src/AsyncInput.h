@@ -1,6 +1,6 @@
 #ifndef ASYNCINPUT_H
 #define ASYNCINPUT_H
-#include "InputPort.h"
+#include "IInputPort.h"
 #include "EventHandledInput.h"
 #include <thread>
 #include <mutex>
@@ -11,14 +11,14 @@
 class AsyncInput: public EventHandledInput
 {
 private:
-    InputPort inputPort;
+    IInputPort& _inputPort;
     std::thread listenigThread;
     std::condition_variable condExit;
     std::mutex mutExit;
     bool exit;
     void Listen();
 public:
-    AsyncInput(uint32_t portNo);
+    AsyncInput(IInputPort& inputPort);
     void Init();
     void StartListening();
     void StopListening();

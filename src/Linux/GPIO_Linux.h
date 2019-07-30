@@ -16,7 +16,7 @@ private:
     std::string const basePath;
     std::string pinBasePath;
 
-protected:
+public:
     enum class Direction{Input, Output, High, Low};
     void SetDirection(Direction dir);
     void SetActiveLow(bool isActiveLow);
@@ -25,7 +25,6 @@ protected:
     bool ReadVal();
     void WriteVal(bool val);
     std::string GetPinBasePath();
-public:
     uint32_t GetPinNo();
 
 };

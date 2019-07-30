@@ -6,34 +6,34 @@
 using namespace std;
 
 
-AsyncInput::AsyncInput(uint32_t portNo):inputPort(portNo),exit(false){
+AsyncInput::AsyncInput(IInputPort& inputPort):_inputPort(inputPort),exit(false){
 
 }
 
 void AsyncInput::Init(){
-    inputPort.SetTriggerEdge(InputPort::TriggerEdge::Both);
+    _inputPort.SetTriggerEdge(IInputPort::TriggerEdge::Both);
     OffEvent();
-    if(inputPort.Read())
+    if(_inputPort.Read())
         OnEvent();
 }
 
 void AsyncInput::Listen(){
-    syslog(LOG_INFO,"Thread started for input %u",inputPort.GetPinNo());
+    syslog(LOG_INFO,"Thread started for input %u",_inputPort.GetPinNo());
     while(1){
-        bool validEvent=inputPort.WaitForValidEvent();
+        bool validEvent=_inputPort.WaitForValidEvent();
         {
             volatile unique_lock<mutex>l(mutExit);
             if(exit)
                 break;
         }
         if(validEvent){
-            if(inputPort.Read())
+            if(_inputPort.Read())
                 OnEvent();
             else
                 OffEvent();
         }
     }
-    syslog(LOG_INFO,"Thread end for input %u",inputPort.GetPinNo());
+    syslog(LOG_INFO,"Thread end for input %u",_inputPort.GetPinNo());
     condExit.notify_all();
 }
 

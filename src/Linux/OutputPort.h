@@ -2,11 +2,14 @@
 #define OUTPUTPORT_H
 
 #include "GPIO_Linux.h"
+#include "IOutputPort.h"
 /**
  * @brief Represents an output port
  */
-class OutputPort: public GPIO_Linux
+class OutputPort: public IOutputPort
 {
+private:
+    GPIO_Linux port;
 public:
     /**
      * @brief Creates and config optput pin. No default value
@@ -19,7 +22,8 @@ public:
      * @param DefaultValue
      */
     OutputPort(uint32_t pinNo,bool DefaultValue);
-    void Write(bool val);
+    virtual void Write(bool val) override;
+    virtual uint32_t GetPinNo() override;
 };
 
 #endif // OUTPUTPORT_H

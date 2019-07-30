@@ -7,11 +7,11 @@
 
 using namespace std;
 
-InputPort::InputPort(uint32_t pinNo):GPIO_Linux (pinNo){
-    SetDirection(Direction::Input);
-    fd=open(string(GetPinBasePath()+"value").c_str(),O_RDONLY | O_NONBLOCK);
+InputPort::InputPort(uint32_t pinNo):port(pinNo){
+    port.SetDirection(GPIO_Linux::Direction::Input);
+    fd=open(string(port.GetPinBasePath()+"value").c_str(),O_RDONLY | O_NONBLOCK);
     if(fd<0){
-        syslog(LOG_ERR,"Unable to open input for polling: %d - %ud",fd,GetPinNo());
+        syslog(LOG_ERR,"Unable to open input for polling: %d - %ud",fd,port.GetPinNo());
     }
     else{
         //a newly opened file consider changed, hence the seek and the read
@@ -25,9 +25,9 @@ InputPort::~InputPort(){
 }
 
 void InputPort::SetTriggerEdge(InputPort::TriggerEdge edge){
-    auto triggerEdge=make_unique<fstream>(GetPinBasePath()+"edge");
+    auto triggerEdge=make_unique<fstream>(port.GetPinBasePath()+"edge");
     if(!triggerEdge->good()){
-        syslog(LOG_CRIT,"Unable to open edge descrriptor. - %ud",GetPinNo());
+        syslog(LOG_CRIT,"Unable to open edge descrriptor. - %ud",port.GetPinNo());
         throw runtime_error("Unable to open edge descrriptor.");
     }
     switch(edge){
@@ -73,5 +73,9 @@ bool InputPort::Read(){
         return b[0]=='1';
     }
     else
-        return ReadVal();
+        return port.ReadVal();
+}
+
+uint32_t InputPort::GetPinNo(){
+    return port.GetPinNo();
 }

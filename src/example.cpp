@@ -11,8 +11,8 @@
 
 using namespace std;
 
-static shared_ptr<OutputPort>out_port;
-static shared_ptr<InputPort>in_sync;
+static shared_ptr<IOutputPort>out_port;
+static shared_ptr<IInputPort>in_sync;
 static shared_ptr<AsyncInput>in_async;
 
 
@@ -52,9 +52,10 @@ void OffEvent(){
 int main(){
     cout<<"Program started"<<endl;
     try{
+        InputPort ai(2);
         out_port=make_shared<OutputPort>(14);
         in_sync=make_shared<InputPort>(3);
-        in_async=make_shared<AsyncInput>(2);
+        in_async=make_shared<AsyncInput>(ai);
         in_async->SetOnCallback(OnEvent);
         in_async->SetOffCallback(OffEvent);
 
