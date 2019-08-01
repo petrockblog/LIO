@@ -5,13 +5,14 @@
 #include "IInputPort.h"
 #include <mutex>
 #include <condition_variable>
+#include <atomic>
 /**
  * @brief Represents an input port
  */
 class InputPort_Linux:public IInputPort
 {
 private:
-    int fd;
+    std::atomic<int> fd;
     SysfsWrapper port;
 public:
     /**
@@ -26,9 +27,11 @@ public:
      * @param timeout_ms maximum wait time. -1 means wait until event happens
      * @return true if event happened, false otherwise
      */
-    virtual bool WaitForValidEvent(int timeout_ms=1000) override;
+    virtual WaitResult WaitForEvent(std::chrono::duration<uint64_t,std::milli> timeout=std::chrono::duration<uint64_t,std::milli>(0)) override;
+    virtual void StopWaitingForEvent() override;
     virtual bool Read() override;
     virtual uint32_t GetPinNo() override;
+    virtual void SetPullUpDown(PullUpDown pud) override;
 };
 
 #endif // INPUTPORT_H

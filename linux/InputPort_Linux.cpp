@@ -1,5 +1,6 @@
 #include "InputPort_Linux.h"
 #include <poll.h>
+#include <signal.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <iostream>
@@ -11,7 +12,7 @@ InputPort_Linux::InputPort_Linux(uint32_t pinNo):port(pinNo){
     port.SetDirection(SysfsWrapper::Direction::Input);
     fd=open(string(port.GetPinBasePath()+"value").c_str(),O_RDONLY | O_NONBLOCK);
     if(fd<0){
-        syslog(LOG_ERR,"Unable to open input for polling: %d - %ud",fd,port.GetPinNo());
+        syslog(LOG_ERR,"Unable to open input for polling: %d - %ud",static_cast<int>(fd),port.GetPinNo());
     }
     else{
         //a newly opened file consider changed, hence the seek and the read
@@ -46,23 +47,27 @@ void InputPort_Linux::SetTriggerEdge(InputPort_Linux::TriggerEdge edge){
     }
 }
 
-bool InputPort_Linux::WaitForValidEvent(int timeout_ms){
-    bool ret=false;
+IInputPort::WaitResult InputPort_Linux::WaitForEvent(std::chrono::duration<uint64_t, milli> timeout){
+    WaitResult ret=WaitResult::Timeout;
     if(fd>=0)
     {
         pollfd pollDescr;
         pollDescr.fd=fd;
         pollDescr.events=POLLPRI;
-        int pret=poll(&pollDescr,1,timeout_ms);
+        int pret=poll(&pollDescr,1,timeout.count());
         if(pret<0){
             cerr<<"Error during poll: "<<pret<<endl;
         }
         else if(pret==0)//timeout
             ;
         else
-            ret=true;
+            ret=WaitResult::EventOccurred;
     }
     return ret;
+}
+
+void InputPort_Linux::StopWaitingForEvent(){
+    //TODO: implement me
 }
 
 bool InputPort_Linux::Read(){
@@ -78,4 +83,8 @@ bool InputPort_Linux::Read(){
 
 uint32_t InputPort_Linux::GetPinNo(){
     return port.GetPinNo();
+}
+
+void InputPort_Linux::SetPullUpDown(IInputPort::PullUpDown pud){
+    //TODO: implement me
 }

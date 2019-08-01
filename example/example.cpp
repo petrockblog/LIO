@@ -68,7 +68,6 @@ int main(){
         sigaction(SIGINT,&sigHandler,NULL);
 
         in_sync->SetTriggerEdge(IInputPort::TriggerEdge::Both);
-        in_async->Init();
         in_async->StartListening();
         cout<<"Running"<<endl;
         int cnt=0;
@@ -83,7 +82,7 @@ int main(){
                 out_port->Write(false);
             }
                   cout<<"Waiting for sync input event..." <<flush;
-            if(in_sync->WaitForValidEvent(4000)){
+            if(in_sync->WaitForEvent(std::chrono::duration<uint64_t, milli>(4000))==IInputPort::WaitResult::EventOccurred){
                 cout<<"Yes: "<<in_sync->Read()<<endl;
             }
             else{
