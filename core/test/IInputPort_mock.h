@@ -13,5 +13,7 @@ public:
 
 public:
     MOCK_METHOD1(loggerFunction, void(const char*));
+    MOCK_METHOD0(onCallback, void());
+    MOCK_METHOD0(offCallback, void());
 
 };

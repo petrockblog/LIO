@@ -23,7 +23,7 @@ void AsyncInputListener::Listen(){
     log.str("");
     while(1){
         IInputPort::WaitResult waitResult=_inputPort.WaitForEvent();
-        if(exit)
+        if(exit || waitResult==IInputPort::WaitResult::Exit)
             break;
         if(waitResult==IInputPort::WaitResult::EventOccurred){
             if(_inputPort.Read())
@@ -37,7 +37,10 @@ void AsyncInputListener::Listen(){
 }
 
 void AsyncInputListener::StartListening(){
-    listenigThread=std::thread(bind(&AsyncInputListener::Listen,this));
+    if(!listenigThread.joinable()){
+        exit=false;
+        listenigThread=std::thread(bind(&AsyncInputListener::Listen,this));
+    }
 }
 
 void AsyncInputListener::StopListening(){
@@ -46,5 +49,22 @@ void AsyncInputListener::StopListening(){
 
     if(listenigThread.joinable())
         listenigThread.join();
+}
+void AsyncInputListener::OnEvent(){
+    if(onCallback!=nullptr)
+        onCallback();
+}
+
+void AsyncInputListener::OffEvent(){
+    if(offCallback!=nullptr)
+        offCallback();
+}
+
+void AsyncInputListener::SetOnCallback(std::function<void ()>callback){
+    onCallback=callback;
+}
+
+void AsyncInputListener::SetOffCallback(std::function<void ()>callback){
+    offCallback=callback;
 }
 
