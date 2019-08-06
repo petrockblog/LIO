@@ -82,7 +82,7 @@ int main(){
                 out_port->Write(false);
             }
                   cout<<"Waiting for sync input event..." <<flush;
-            if(in_sync->WaitForEvent(std::chrono::duration<uint64_t, milli>(4000))==IInputPort::WaitResult::EventOccurred){
+            if(in_sync->WaitForEvent(4000ms)==IInputPort::WaitResult::EventOccurred){
                 cout<<"Yes: "<<in_sync->Read()<<endl;
             }
             else{

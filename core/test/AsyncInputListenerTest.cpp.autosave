@@ -20,7 +20,7 @@ public:
         subject.SetOffCallback(bind(&IInputPort_mock::offCallback,&input_mock));
     }
 };
-TEST(construciton,withoutLogger){
+TEST(construciton,initWithoutLogger){
 
     IInputPort_mock input_mock;
     AsyncInputListener subject(input_mock);
@@ -88,7 +88,7 @@ TEST_F(AsyncInputListenerTest,restartListening){
     usleep(100);
     subject.StopListening();
 }
-TEST_F(AsyncInputListenerTest,TmeoutReaction){
+TEST_F(AsyncInputListenerTest,Timeout){
     EXPECT_CALL(input_mock,WaitForEvent(testing::_)).WillRepeatedly(Return(IInputPort::WaitResult::Timeout));
     EXPECT_CALL(input_mock,Read()).Times(0);
     EXPECT_CALL(input_mock,offCallback()).Times(0);

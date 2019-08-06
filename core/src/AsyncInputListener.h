@@ -3,7 +3,6 @@
 #include "IInputPort.h"
 #include <thread>
 #include <atomic>
-#include <condition_variable>
 #include <functional>
 /**
  * @brief Represents an input pin that can inform the outside world from its state change

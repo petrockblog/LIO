@@ -37,10 +37,9 @@ void AsyncInputListener::Listen(){
 }
 
 void AsyncInputListener::StartListening(){
-    if(!listenigThread.joinable()){
-        exit=false;
-        listenigThread=std::thread(bind(&AsyncInputListener::Listen,this));
-    }
+    StopListening();
+    exit=false;
+    listenigThread=std::thread(bind(&AsyncInputListener::Listen,this));
 }
 
 void AsyncInputListener::StopListening(){
