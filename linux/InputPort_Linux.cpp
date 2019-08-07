@@ -47,7 +47,7 @@ void InputPort_Linux::SetTriggerEdge(InputPort_Linux::TriggerEdge edge){
     }
 }
 
-IInputPort::WaitResult InputPort_Linux::WaitForEvent(std::chrono::duration<uint64_t, milli> timeout){
+IInputPort::WaitResult InputPort_Linux::WaitForEvent(std::chrono::milliseconds timeout){
     WaitResult ret=WaitResult::Timeout;
     if(fd>=0)
     {

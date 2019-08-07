@@ -7,10 +7,6 @@
 using testing::Return;
 using namespace std;
 
-ACTION_P(asyncCallNotifier,notifier){
-    usleep(100);
-    notifier->notify_all();
-}
 class AsyncInputListenerTest:public testing::Test{
 public:
     IInputPort_mock input_mock;
@@ -20,12 +16,12 @@ public:
         subject.SetOffCallback(bind(&IInputPort_mock::offCallback,&input_mock));
     }
 };
-TEST(construciton,withoutLogger){
+TEST(construciton,initWithoutLogger){
 
     IInputPort_mock input_mock;
     AsyncInputListener subject(input_mock);
     subject.StartListening();
-    usleep(100);
+    this_thread::sleep_for(1ms);
     subject.StopListening();
 }
 TEST(destruction,stopListening){
@@ -37,13 +33,13 @@ TEST(destruction,stopListening){
         AsyncInputListener subject(input_mock);
         EXPECT_CALL(input_mock,StopWaitingForEvent()).Times(2);
         subject.StartListening();
-        usleep(100);
+        this_thread::sleep_for(1ms);
     }
 }
 TEST_F(AsyncInputListenerTest, logger){
     EXPECT_CALL(input_mock,loggerFunction(testing::_)).Times(2);
     subject.StartListening();
-    usleep(100);
+    this_thread::sleep_for(1ms);
     subject.StopListening();
 }
 TEST_F(AsyncInputListenerTest,TurnOnCallback){
@@ -52,7 +48,7 @@ TEST_F(AsyncInputListenerTest,TurnOnCallback){
     EXPECT_CALL(input_mock,onCallback()).Times(testing::AtLeast(1));
     EXPECT_CALL(input_mock,offCallback()).Times(0);
     subject.StartListening();
-    usleep(100);
+    this_thread::sleep_for(1ms);
     subject.StopListening();
 }
 TEST_F(AsyncInputListenerTest,TurnOffCallback){
@@ -61,7 +57,7 @@ TEST_F(AsyncInputListenerTest,TurnOffCallback){
     EXPECT_CALL(input_mock,offCallback()).Times(testing::AtLeast(1));
     EXPECT_CALL(input_mock,onCallback()).Times(0);
     subject.StartListening();
-    usleep(100);
+    this_thread::sleep_for(1ms);
     subject.StopListening();
 }
 TEST_F(AsyncInputListenerTest,ExitSignal){
@@ -71,7 +67,7 @@ TEST_F(AsyncInputListenerTest,ExitSignal){
     EXPECT_CALL(input_mock,offCallback()).Times(1);
     EXPECT_CALL(input_mock,onCallback()).Times(0);
     subject.StartListening();
-    usleep(100);
+    this_thread::sleep_for(1ms);
 }
 TEST_F(AsyncInputListenerTest,restartListening){
     EXPECT_CALL(input_mock,WaitForEvent(testing::_)).WillOnce(Return(IInputPort::WaitResult::Exit));
@@ -79,22 +75,22 @@ TEST_F(AsyncInputListenerTest,restartListening){
     EXPECT_CALL(input_mock,offCallback()).Times(0);
     EXPECT_CALL(input_mock,onCallback()).Times(0);
     subject.StartListening();
-    usleep(10000);
+    this_thread::sleep_for(10ms);
     EXPECT_CALL(input_mock,WaitForEvent(testing::_)).WillRepeatedly(Return(IInputPort::WaitResult::EventOccurred));
     EXPECT_CALL(input_mock,Read()).WillRepeatedly(Return(false));
     EXPECT_CALL(input_mock,offCallback()).Times(testing::AtLeast(1));
     EXPECT_CALL(input_mock,onCallback()).Times(0);
     subject.StartListening();
-    usleep(100);
+    this_thread::sleep_for(1ms);
     subject.StopListening();
 }
-TEST_F(AsyncInputListenerTest,TmeoutReaction){
+TEST_F(AsyncInputListenerTest,Timeout){
     EXPECT_CALL(input_mock,WaitForEvent(testing::_)).WillRepeatedly(Return(IInputPort::WaitResult::Timeout));
     EXPECT_CALL(input_mock,Read()).Times(0);
     EXPECT_CALL(input_mock,offCallback()).Times(0);
     EXPECT_CALL(input_mock,onCallback()).Times(0);
     subject.StartListening();
-    usleep(100);
+    this_thread::sleep_for(1ms);
     subject.StopListening();
 
 

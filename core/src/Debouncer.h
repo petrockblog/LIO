@@ -3,28 +3,37 @@
 #include <cstdint>
 #include <mutex>
 #include <thread>
-#include <list>
 #include <thread>
 #include <condition_variable>
 #include <atomic>
+#include "IDebouncerStrategy.h"
 /**
  *  @brief  a class that filters out the debounce from an input.
 */
 class Debouncer{
+public:
+    enum class operationMode{singelEvent,repeatingEvent};
+
 private:
-    std::chrono::duration<uint64_t,std::milli> interval;
+    std::chrono::milliseconds interval;
     std::condition_variable* cond;
-    std::mutex zeroMutex;
+    std::atomic<operationMode> opMode;
     std::atomic<bool> exit;
-    std::thread* t;
+    std::mutex zeroMutex;
+    std::mutex oneMutex;
+    std::mutex notifierMutex;
+    std::mutex strategyMutex;
     std::condition_variable oneCondition;
     std::condition_variable zeroCondition;
-    void doDebounce();
+    std::thread thr_debounce;
+    IDebouncerStrategy* debouncerStrategy;
+    void debouncer();
 public:
     Debouncer();
     ~Debouncer();
-    void setSampleInterval(std::chrono::duration<uint64_t,std::milli>);
+    void setDebounceInterval(std::chrono::milliseconds);
+    void setStrategy(IDebouncerStrategy*);
     void off();
     void on();
-    void setNotifyer(std::condition_variable*);
+
 };

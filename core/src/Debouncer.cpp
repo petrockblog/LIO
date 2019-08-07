@@ -2,15 +2,17 @@
 #include <algorithm>
 #include <iostream>
 using namespace std;
-Debouncer::Debouncer():cond(nullptr),exit(false){
-    t=new thread(&Debouncer::doDebounce,this);
+Debouncer::Debouncer():
+    cond(nullptr),
+    exit(false),
+    thr_debounce(&Debouncer::debouncer,this){
+
 }
 Debouncer::~Debouncer(){
     exit=true;
     oneCondition.notify_one();
     zeroCondition.notify_one();
-    t->join();
-    delete t;
+    thr_debounce.join();
 }
 void Debouncer::off(){
     zeroCondition.notify_one();
@@ -18,27 +20,58 @@ void Debouncer::off(){
 void Debouncer::on(){
     oneCondition.notify_one();
 }
-void Debouncer::setSampleInterval(std::chrono::duration<uint64_t,std::milli> interv){
-    unique_lock<mutex> lck(zeroMutex);
+void Debouncer::setDebounceInterval(std::chrono::milliseconds interv){
+    volatile unique_lock<mutex> lck(zeroMutex);
     interval=interv;
 }
-void Debouncer::setNotifyer(std::condition_variable* cnd){
-    cond=cnd;
+
+void Debouncer::setStrategy(IDebouncerStrategy * strategy){
+    volatile unique_lock<mutex>lck(strategyMutex);
+    debouncerStrategy=strategy;
 }
-void Debouncer::doDebounce(){
-    std::mutex oneMutex;
-    unique_lock<mutex> onelck(oneMutex);
+
+void Debouncer::debouncer(){
+    enum state{on,onToOff,off,offToOn};
+    state currentState=state::off;
     while(!exit){
-        oneCondition.wait(onelck);
-        if(exit)
-            break;
-        unique_lock<mutex> zerolck(zeroMutex);
-        if(zeroCondition.wait_for(zerolck,interval)==cv_status::timeout){
-            if(cond)
-                cond->notify_all();
+        switch(currentState){
+            case off:{
+                unique_lock<mutex> onelck(oneMutex);
+                if(oneCondition.wait_for(onelck,std::chrono::milliseconds(1000))==cv_status::no_timeout)
+                    currentState=offToOn;
+                break;
+            }
+            case offToOn:{
+                unique_lock<mutex> zerolck(zeroMutex);
+                if(zeroCondition.wait_for(zerolck,interval)==cv_status::timeout){
+                    volatile unique_lock<mutex>lck(strategyMutex);
+                    if(debouncerStrategy)
+                        debouncerStrategy->handleOnEvent();
+                    currentState=on;
+                }
+                else
+                    currentState=off;
+                break;
+            }
+            case on:{
+                unique_lock<mutex> zerolck(zeroMutex);
+                if(zeroCondition.wait_for(zerolck, std::chrono::milliseconds(1000))==cv_status::no_timeout)
+                    currentState=onToOff;
+                break;
+            }
+            case onToOff:{
+                unique_lock<mutex> onelck(oneMutex);
+                if(oneCondition.wait_for(onelck,interval)==cv_status::timeout){
+                    volatile unique_lock<mutex>lck(strategyMutex);
+                    if(debouncerStrategy)
+                        debouncerStrategy->handleOffEvent();
+                    currentState=off;
+                }
+                else
+                    currentState=on;
+                break;
+            }
         }
-        else if(exit)
-            break;
     }
 }
 

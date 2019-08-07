@@ -27,7 +27,7 @@ public:
      * @param timeout_ms maximum wait time. -1 means wait until event happens
      * @return true if event happened, false otherwise
      */
-    virtual WaitResult WaitForEvent(std::chrono::duration<uint64_t,std::milli> timeout=std::chrono::duration<uint64_t,std::milli>(0)) override;
+    virtual WaitResult WaitForEvent(std::chrono::milliseconds timeout=std::chrono::milliseconds(0)) override;
     virtual void StopWaitingForEvent() override;
     virtual bool Read() override;
     virtual uint32_t GetPinNo() override;

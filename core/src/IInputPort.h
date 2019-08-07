@@ -18,7 +18,7 @@ public:
      * @param timeout maximum wait time. 0 means wait until event happens
      * @return processResult
      */
-    virtual WaitResult WaitForEvent(std::chrono::duration<uint64_t,std::milli> timeout=std::chrono::duration<uint64_t,std::milli>(0))=0;
+    virtual WaitResult WaitForEvent(std::chrono::milliseconds timeout=std::chrono::milliseconds(0))=0;
     virtual void StopWaitingForEvent()=0;
     virtual bool Read()=0;
     virtual uint32_t GetPinNo()=0;
