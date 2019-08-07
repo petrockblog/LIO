@@ -10,9 +10,20 @@ Debouncer::Debouncer():
 }
 Debouncer::~Debouncer(){
     exit=true;
-    oneCondition.notify_one();
-    zeroCondition.notify_one();
+    atomic<bool> tExit(false);
+    mutex m;
+    condition_variable_any cv;
+    thread t([&](){
+        while(!tExit){
+            oneCondition.notify_one();
+            zeroCondition.notify_one();
+            cv.wait_for(m,std::chrono::seconds(1));
+        }
+    });
     thr_debounce.join();
+    tExit=true;
+    cv.notify_all();
+    t.join();
 }
 void Debouncer::off(){
     zeroCondition.notify_one();
@@ -37,8 +48,8 @@ void Debouncer::debouncer(){
         switch(currentState){
             case off:{
                 unique_lock<mutex> onelck(oneMutex);
-                if(oneCondition.wait_for(onelck,std::chrono::milliseconds(1000))==cv_status::no_timeout)
-                    currentState=offToOn;
+                oneCondition.wait(onelck);
+                currentState=offToOn;
                 break;
             }
             case offToOn:{
@@ -55,8 +66,8 @@ void Debouncer::debouncer(){
             }
             case on:{
                 unique_lock<mutex> zerolck(zeroMutex);
-                if(zeroCondition.wait_for(zerolck, std::chrono::milliseconds(1000))==cv_status::no_timeout)
-                    currentState=onToOff;
+                zeroCondition.wait(zerolck);
+                currentState=onToOff;
                 break;
             }
             case onToOff:{
