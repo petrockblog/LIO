@@ -53,6 +53,8 @@ void OffEvent(){
 int main(){
     cout<<"Program started"<<endl;
     try{
+        inputPort.SetPullUpDown(IInputPort::PullUpDown::PullDown);
+        inputPort.SetTriggerEdge(IInputPort::TriggerEdge::Both);
         out_port=make_shared<OutputPort_Linux>(14);
         in_sync=make_shared<InputPort_Linux>(3);
         in_async=make_shared<AsyncInputListener>(inputPort,[&](const char* msg){cout<<msg<<endl;});

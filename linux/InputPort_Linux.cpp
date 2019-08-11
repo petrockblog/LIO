@@ -98,5 +98,15 @@ uint32_t InputPort_Linux::GetPinNo(){
 }
 
 void InputPort_Linux::SetPullUpDown(IInputPort::PullUpDown pud){
-    //TODO: implement me
+    switch (pud) {
+    case PullUpDown::HiZ:
+        port.SetDirection(SysfsWrapper::Direction::Input);
+        break;
+    case PullUpDown::PullUp:
+        port.SetDirection(SysfsWrapper::Direction::High);
+        break;
+    case PullUpDown::PullDown:
+        port.SetDirection(SysfsWrapper::Direction::Low);
+        break;
+    }
 }
