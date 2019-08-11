@@ -15,6 +15,7 @@ class InputPort_Linux:public IInputPort
 private:
     std::atomic<int> fd;
     SysfsWrapper port;
+    struct sigaction sa;
 public:
     /**
      * @brief Create and config an input port
