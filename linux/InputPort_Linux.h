@@ -6,6 +6,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <atomic>
+#include <signal.h>
 /**
  * @brief Represents an input port
  */

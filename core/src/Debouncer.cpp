@@ -12,12 +12,13 @@ Debouncer::~Debouncer(){
     exit=true;
     atomic<bool> tExit(false);
     mutex m;
-    condition_variable_any cv;
+    unique_lock<mutex>lck(m);
+    condition_variable cv;
     thread t([&](){
         while(!tExit){
             oneCondition.notify_one();
             zeroCondition.notify_one();
-            cv.wait_for(m,std::chrono::seconds(1));
+            cv.wait_for(lck,std::chrono::seconds(1));
         }
     });
     thr_debounce.join();

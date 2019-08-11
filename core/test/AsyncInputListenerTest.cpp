@@ -16,6 +16,33 @@ public:
         subject.SetOffCallback(bind(&IInputPort_mock::offCallback,&input_mock));
     }
 };
+TEST(th,th){
+    mutex m;
+        unique_lock<mutex>lck(m);
+        condition_variable cnd;
+
+        thread t1([&](){
+            for(int i=0;;++i){
+            cout<<"A thread"<<endl<<std::flush;
+            this_thread::sleep_for(std::chrono::seconds(2));
+            cout<<"A thread notify"<<endl<<std::flush;
+            cnd.notify_one();
+            }
+        });
+        thread t2([&](){
+            while(1){
+            if(cnd.wait_for(lck,std::chrono::milliseconds(1500))==cv_status::timeout){
+                cout<<"B thread timeout"<<endl<<std::flush;
+            }
+            else{
+                cout<<"B thread notified"<<endl<<std::flush;
+            }
+            }
+        });
+        while(1)
+            this_thread::sleep_for(5s);
+
+}
 TEST(construciton,initWithoutLogger){
 
     IInputPort_mock input_mock;

@@ -1,16 +1,25 @@
 #include "InputPort_Linux.h"
 #include <poll.h>
-#include <signal.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <iostream>
 #include <syslog.h>
+#include <functional>
 
 using namespace std;
+
+void sigactionHandler(int sig, siginfo_t * info, void *)
+{
+    cout<<"signal: "<<sig<<", fd: "<<info->si_fd<<endl;
+}
 
 InputPort_Linux::InputPort_Linux(uint32_t pinNo):port(pinNo){
     port.SetDirection(SysfsWrapper::Direction::Input);
     fd=open(string(port.GetPinBasePath()+"value").c_str(),O_RDONLY | O_NONBLOCK);
+    struct sigaction sa;
+
+    sa.sa_sigaction=sigactionHandler;
+    sigaction(POLL_IN,&sa,NULL);
     if(fd<0){
         syslog(LOG_ERR,"Unable to open input for polling: %d - %ud",static_cast<int>(fd),port.GetPinNo());
     }
@@ -23,6 +32,9 @@ InputPort_Linux::InputPort_Linux(uint32_t pinNo):port(pinNo){
 InputPort_Linux::~InputPort_Linux(){
     if(fd>=0)
         close(fd);
+    struct sigaction sa;
+    sa.sa_handler=SIG_DFL;
+    sigaction(POLL_IN,&sa,NULL);
 }
 
 void InputPort_Linux::SetTriggerEdge(InputPort_Linux::TriggerEdge edge){
