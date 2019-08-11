@@ -11,6 +11,7 @@
 
 using namespace std;
 
+static InputPort_Linux inputPort(2);
 static shared_ptr<IOutputPort>out_port;
 static shared_ptr<IInputPort>in_sync;
 static shared_ptr<AsyncInputListener>in_async;
@@ -52,7 +53,6 @@ void OffEvent(){
 int main(){
     cout<<"Program started"<<endl;
     try{
-        InputPort_Linux inputPort(2);
         out_port=make_shared<OutputPort_Linux>(14);
         in_sync=make_shared<InputPort_Linux>(3);
         in_async=make_shared<AsyncInputListener>(inputPort,[&](const char* msg){cout<<msg<<endl;});
