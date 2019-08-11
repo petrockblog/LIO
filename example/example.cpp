@@ -55,7 +55,7 @@ int main(){
         InputPort_Linux inputPort(2);
         out_port=make_shared<OutputPort_Linux>(14);
         in_sync=make_shared<InputPort_Linux>(3);
-        in_async=make_shared<AsyncInputListener>(inputPort);
+        in_async=make_shared<AsyncInputListener>(inputPort,[&](const char* msg){cout<<msg<<endl;});
         in_async->SetOnCallback(OnEvent);
         in_async->SetOffCallback(OffEvent);
 
@@ -69,6 +69,7 @@ int main(){
 
         in_sync->SetTriggerEdge(IInputPort::TriggerEdge::Both);
         in_async->StartListening();
+
         cout<<"Running"<<endl;
         int cnt=0;
         while (!stop && cnt++<10) {
