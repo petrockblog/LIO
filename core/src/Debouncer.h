@@ -1,4 +1,6 @@
-#pragma once
+#ifndef DEBOUNCER_H
+#define DEBOUNCER_H
+
 #include <chrono>
 #include <cstdint>
 #include <mutex>
@@ -37,3 +39,5 @@ public:
     void on();
 
 };
+
+#endif

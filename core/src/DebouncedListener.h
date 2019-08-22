@@ -5,7 +5,7 @@
 #include <chrono>
 #include <cstdint>
 
-#include "AsyncInputListener.h"
+#include "InputPort.h"
 #include "Debouncer.h"
 #include "DebouncerStrategySimple.h"
 
@@ -13,12 +13,12 @@
 class DebouncedListener
 {
 private:
-    AsyncInputListener listener;
+    InputPort& inputPort;
     Debouncer debouncer;
     DebouncerStrategySimple simpleStrategy;
 
 public:
-    DebouncedListener(IInputPort& port,
+    DebouncedListener(InputPort& port,
                       std::function<void()>onCallback,
                       std::function<void()>offCallback,
                       std::chrono::milliseconds debounceDuration=std::chrono::milliseconds(100));

@@ -2,23 +2,23 @@
 
 using namespace std;
 
-DebouncedListener::DebouncedListener(IInputPort &port,
+DebouncedListener::DebouncedListener(InputPort &port,
                                      std::function<void ()> onCallback,
                                      std::function<void ()> offCallback,
                                      std::chrono::milliseconds debounceDuration):
-    listener(port)
+    inputPort(port)
 {
     debouncer.setStrategy(&simpleStrategy);
     debouncer.setDebounceInterval(debounceDuration);
-    listener.SetOnCallback(bind(&Debouncer::on,&debouncer));
-    listener.SetOffCallback(bind(&Debouncer::off,&debouncer));
+//    listener.SetOnCallback(bind(&Debouncer::on,&debouncer));
+//    listener.SetOffCallback(bind(&Debouncer::off,&debouncer));
     setOnCallback(onCallback);
     setOffCallback(offCallback);
-    listener.StartListening();
+//    listener.StartListening();
 }
 
 DebouncedListener::~DebouncedListener(){
-    listener.StopListening();
+//    listener.StopListening();
 }
 
 void DebouncedListener::setOnCallback(std::function<void ()> onCallback){

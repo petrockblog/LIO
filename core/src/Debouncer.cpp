@@ -10,21 +10,11 @@ Debouncer::Debouncer():
 }
 Debouncer::~Debouncer(){
     exit=true;
-    atomic<bool> tExit(false);
-    mutex m;
-    unique_lock<mutex>lck(m);
-    condition_variable cv;
-    thread t([&](){
-        while(!tExit){
-            oneCondition.notify_one();
-            zeroCondition.notify_one();
-            cv.wait_for(lck,std::chrono::seconds(1));
-        }
-    });
+    unique_lock<mutex>lckZero(zeroMutex);
+    unique_lock<mutex>lckOne(oneMutex);
+    oneCondition.notify_one();
+    zeroCondition.notify_one();
     thr_debounce.join();
-    tExit=true;
-    cv.notify_all();
-    t.join();
 }
 void Debouncer::off(){
     zeroCondition.notify_one();

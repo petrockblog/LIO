@@ -6,15 +6,14 @@
 
 #include "OutputPort_Linux.h"
 #include "InputPort_Linux.h"
-#include "AsyncInputListener.h"
+#include "InputPort.h"
 
 
 using namespace std;
 
-static InputPort_Linux inputPort(2);
 static shared_ptr<IOutputPort>out_port;
-static shared_ptr<IInputPort>in_sync;
-static shared_ptr<AsyncInputListener>in_async;
+static shared_ptr<InputPort>in_sync;
+static shared_ptr<InputPort>in_async;
 
 
 static bool stop=false;
@@ -24,7 +23,7 @@ static bool stop=false;
 void shutDown(){
     cout<<"Shutdown in progress"<<endl;
     if(in_async)
-        in_async->StopListening();
+        in_async->SignalStopListening();
     stop=true;
     cout<<"Shutdown finished"<<endl;
 }
@@ -43,23 +42,25 @@ void handleSignals(int){
     }
 }
 
-void OnEvent(){
-    cout<<endl<<"---IN(Async): ON event!---"<<endl;
+void InputEvent(bool value){
+    if(value)
+        cout<<endl<<"---IN(Async): ON event!---"<<endl;
+    else
+        cout<<endl<<"---IN(Async): OFF event!---"<<endl;
 }
 void OffEvent(){
-    cout<<endl<<"---IN(Async): OFF event!---"<<endl;
+
 }
 
 int main(){
     cout<<"Program started"<<endl;
     try{
-        inputPort.SetPullUpDown(IInputPort::PullUpDown::PullDown);
-        inputPort.SetTriggerEdge(IInputPort::TriggerEdge::Both);
         out_port=make_shared<OutputPort_Linux>(14);
         in_sync=make_shared<InputPort_Linux>(3);
-        in_async=make_shared<AsyncInputListener>(inputPort,[&](const char* msg){cout<<msg<<endl;});
-        in_async->SetOnCallback(OnEvent);
-        in_async->SetOffCallback(OffEvent);
+        in_async=make_shared<InputPort_Linux>(2);
+        in_async->SetPullUpDown(InputPort::PullUpDown::PullDown);
+        in_async->SetTriggerEdge(InputPort::TriggerEdge::Both);
+        in_async->SetEventCallback(InputEvent);
 
         //signal hangling (ctrl+c, or service termination)
         struct sigaction sigHandler;
@@ -69,8 +70,8 @@ int main(){
         sigaction(SIGTERM,&sigHandler,NULL);
         sigaction(SIGINT,&sigHandler,NULL);
 
-        in_sync->SetTriggerEdge(IInputPort::TriggerEdge::Both);
-        in_async->StartListening();
+        in_sync->SetTriggerEdge(InputPort::TriggerEdge::Both);
+        in_async->SignalStartListening();
 
         cout<<"Running"<<endl;
         int cnt=0;
@@ -85,13 +86,14 @@ int main(){
                 out_port->Write(false);
             }
                   cout<<"Waiting for sync input event..." <<flush;
-            if(in_sync->WaitForEvent(4000ms)==IInputPort::WaitResult::EventOccurred){
-                cout<<"Yes: "<<in_sync->Read()<<endl;
-            }
-            else{
-                cout<<"No sync input event."<<endl;
+                  //TODO: Sync
+//            if(in_sync->WaitForEvent(4000ms)==InputPort::WaitResult::EventOccurred){
+//                cout<<"Yes: "<<in_sync->Read()<<endl;
+//            }
+//            else{
+//                cout<<"No sync input event."<<endl;
 
-            }
+//            }
             this_thread::sleep_for(chrono::seconds(4));
             cout<<"-----------------------------"<<endl;
         }

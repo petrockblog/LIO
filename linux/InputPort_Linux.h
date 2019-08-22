@@ -1,8 +1,8 @@
-#ifndef INPUTPORT_H
-#define INPUTPORT_H
+#ifndef INPUTPORT_LINUX_H
+#define INPUTPORT_LINUX_H
 
 #include "SysfsWrapper.h"
-#include "IInputPort.h"
+#include "InputPort.h"
 #include <mutex>
 #include <condition_variable>
 #include <atomic>
@@ -10,7 +10,7 @@
 /**
  * @brief Represents an input port
  */
-class InputPort_Linux:public IInputPort
+class InputPort_Linux:public InputPort
 {
 private:
     std::atomic<int> fd;
@@ -29,11 +29,16 @@ public:
      * @param timeout_ms maximum wait time. -1 means wait until event happens
      * @return true if event happened, false otherwise
      */
-    virtual WaitResult WaitForEvent(std::chrono::milliseconds timeout=std::chrono::milliseconds(0)) override;
-    virtual void StopWaitingForEvent() override;
+    virtual void SignalStartListening() override;
+    virtual void SignalStopListening() override;
     virtual bool Read() override;
     virtual uint32_t GetPinNo() override;
     virtual void SetPullUpDown(PullUpDown pud) override;
+
+    // InputPort interface
+public:
 };
 
-#endif // INPUTPORT_H
+
+
+#endif // INPUTPORT_LINUX_H

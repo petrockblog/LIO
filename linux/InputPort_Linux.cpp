@@ -5,6 +5,7 @@
 #include <iostream>
 #include <syslog.h>
 #include <functional>
+#include <fcntl.h>
 
 using namespace std;
 
@@ -60,29 +61,43 @@ void InputPort_Linux::SetTriggerEdge(InputPort_Linux::TriggerEdge edge){
             break;
     }
 }
-
-IInputPort::WaitResult InputPort_Linux::WaitForEvent(std::chrono::milliseconds timeout){
-    WaitResult ret=WaitResult::Timeout;
-    if(fd>=0)
-    {
-        pollfd pollDescr;
-        pollDescr.fd=fd;
-        pollDescr.events=POLLPRI;
-        int pret=poll(&pollDescr,1,timeout.count());
-        if(pret<0){
-            cerr<<"Error during poll: "<<pret<<endl;
-        }
-        else if(pret==0)//timeout
-            ;
-        else
-            ret=WaitResult::EventOccurred;
-    }
-    return ret;
+void InputPort_Linux::SignalStartListening()
+{
+    //TODO
 }
 
-void InputPort_Linux::StopWaitingForEvent(){
-    //TODO: implement me
+void InputPort_Linux::SignalStopListening()
+{
+    //TODO
 }
+//IInputPort::WaitResult InputPort_Linux::WaitForEvent(std::chrono::milliseconds timeout){
+//    WaitResult ret=WaitResult::Timeout;
+//    if(fd>=0)
+//    {
+//        pollfd pollDescr;
+//        pollDescr.fd=fd;
+//        pollDescr.events=POLLPRI;
+//        pid_t pid=vfork();
+//        int pret;
+//        if(pid==0){//child process
+//            pret=poll(&pollDescr,1,timeout.count()==0?-1:timeout.count());
+//        }
+//        if(pret<0){
+//            cerr<<"Error during poll: "<<pret<<endl;
+//        }
+//        else if(pret==0)//timeout
+//            ;
+//        else
+//            ret=WaitResult::EventOccurred;
+//    }
+//    return ret;
+//}
+
+//void InputPort_Linux::StopWaitingForEvent(){
+//    if(fd>0){
+//        fcntl(fd,F_SETSIG,SIGHUP);
+//    }
+//}
 
 bool InputPort_Linux::Read(){
     if(fd>=0){
@@ -99,7 +114,7 @@ uint32_t InputPort_Linux::GetPinNo(){
     return port.GetPinNo();
 }
 
-void InputPort_Linux::SetPullUpDown(IInputPort::PullUpDown pud){
+void InputPort_Linux::SetPullUpDown(InputPort::PullUpDown pud){
     switch (pud) {
     case PullUpDown::HiZ:
         port.SetDirection(SysfsWrapper::Direction::Input);
